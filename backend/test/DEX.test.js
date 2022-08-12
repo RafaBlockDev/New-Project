@@ -219,4 +219,62 @@ describe("DEX", function () {
     );
   });
 
+  // Testing claim test token function
+  it('trying to obtain 1000 test token', async () => {
+    await tokenStaking.claimTst({ from: user });
+
+    result = await testToken.balanceOf(user);
+    assert.equal(result.toString(), tokenCorvert('3235'), '2235 + 1000');
+  });
+
+  // Testing who can change custom APY
+  it('checking who can change APY', async () => {
+    await tokenStaking.changeAPY('200', { from: creator });
+    // testing with invalid arguments
+    await tokenStaking.changeAPY({ from: creator }).should.be.rejected;
+    await tokenStaking.changeAPY(tokenCorvert('0'), { from: creator }).should
+      .be.rejected;
+    await tokenStaking.changeAPY(tokenCorvert('200'), { from: user }).should
+      .be.rejected;
+  });
+
+  // Checking New custom APY value
+  it('checking new custom APY value', async () => {
+    const value = await tokenStaking.customAPY();
+    assert.equal(value, '200', 'custom APY set to 200 (0.2% Daily)');
+  });
+
+  // Redistributing custom APY rewards
+  it('staking at customStaking', async () => {
+    await testToken.approve(tokenStaking.address, tokenCorvert('1000'), {
+      from: user,
+    });
+    // stake tokens
+    await tokenStaking.customStaking(tokenCorvert('1000'), { from: user });
+    // checking user balance after staking
+    result = await testToken.balanceOf(user);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('2235'),
+      'User balance after unstaking 3235 - 1000'
+    );
+  });
+  // Issuing custom rewards
+  it('redistributing rewards, checking who can redistribute', async () => {
+    // issue customRewards function from creator
+    await tokenStaking.customRewards({ from: creator });
+
+    // issue customRewards function from user, should not be able
+    await tokenStaking.customRewards({ from: user }).should.be.rejected;
+  });
+  // Checking new user balance after custom rewards
+  it('checking user balance after custom APY rewards ', async () => {
+    result = await testToken.balanceOf(user);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('2237'),
+      'User balance after unstaking 2235 + 2'
+    );
+  });
+
 })
