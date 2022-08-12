@@ -11,6 +11,10 @@ import "./LitioToken.sol";
  * @author Rafael Fuentes - RafaBlockDev
  */
 
+/**
+ * TODO custom and add security methods and data types to the contract...
+ */
+
 contract DEX {
     string name = "Yield Farming";
     LitioToken public litToken;
@@ -127,7 +131,7 @@ contract DEX {
 
     /// @dev Function to custom the Rewards from the owner
     function customRewards() public {
-        require(msg.sender == owner, "Only contract creator can redistribute");
+        require(msg.sender == owner, "Only the owner can custom the rewards");
         for (uint256 i = 0; i < customStakers.length; i++) {
             address recipient = customStakers[i];
             uint256 balance = customStakingBalance[recipient] * customAPY;
@@ -139,18 +143,14 @@ contract DEX {
         }
     }
 
-    /**
-     * TODO
-     * Default APY
-     * APY for staking ( would be 0.1% per day || 49% APY per year)
-     * Total Staked
-     * Users balance
-     * Users list to know who are staking
-     * Users list to know who staked
-     * Users list of all stakers
-     * Stake token
-     * Unstake token
-     * Airdrop token
-     * Change APY for custom staking
-     */
+    /// @dev Function to change the APY since the value parameter
+    /// @param _value is the value to change the APY
+    function changeAPY(uint256 _value) public {
+        require(msg.sender == owner, "Only owner can change the APY");
+        require(
+            _value > 0,
+            "APY value has to be more than 0, try 100 for (0.100% daily) instead"
+        );
+        customAPY = _value;
+    }
 }
