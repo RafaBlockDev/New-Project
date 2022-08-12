@@ -107,6 +107,38 @@ contract DEX {
         customIsStakingAtm[msg.sender] = false;
     }
 
+    /// @dev Set an airdrop tokens for the owner
+    function redistributeRewards() public {
+        require(
+            msg.sender == owner,
+            "only the owner can redistribute the tokens"
+        );
+        for (uint256 i = 0; i < stakers.length; i++) {
+            address recipient = stakers[i];
+
+            uint256 balance = stakingBalance[recipient] * defaultAPY;
+            balance = balance / 100000;
+
+            if (balance > 0) {
+                litio.transfer(recipient, balance);
+            }
+        }
+    }
+
+    /// @dev Function to custom the Rewards from the owner
+    function customRewards() public {
+        require(msg.sender == owner, "Only contract creator can redistribute");
+        for (uint256 i = 0; i < customStakers.length; i++) {
+            address recipient = customStakers[i];
+            uint256 balance = customStakingBalance[recipient] * customAPY;
+            balance = balance / 100000;
+
+            if (balance > 0) {
+                testToken.transfer(recipient, balance);
+            }
+        }
+    }
+
     /**
      * TODO
      * Default APY
