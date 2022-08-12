@@ -106,4 +106,117 @@ describe("DEX", function () {
     result = await tokenStaking.hasStaked(user);
     assert.equal(result.toString(), 'true', 'user has staked');
   });
+
+  // Checking balance of TokenStaking contract after redistribution
+  it('checking TokenStaking balance', async () => {
+    result = await testToken.balanceOf(tokenStaking.address);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('500999'),
+      'Smart contract total balance after staking 1000'
+    );
+  });
+
+  // Check balance of user after redistribution should be X / 1000
+  it('checking user balance', async () => {
+    result = await testToken.balanceOf(user);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('1235'),
+      'User total balance after redistribution 1 + 1234'
+    );
+  });
+
+  // Testing unstaking function
+  it('unstaking and checking users balance after unstake', async () => {
+    await tokenStaking.unstakeTokens({ from: user });
+    result = await testToken.balanceOf(user);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('2235'),
+      'User balance after unstaking 1000 + 1235'
+    );
+  });
+
+  // Checking TokenStaking total staked balance
+  it('checking total staked', async () => {
+    result = await tokenStaking.totalStaked();
+    assert.equal(
+      result.toString(),
+      tokenCorvert('0'),
+      'total staked should be 0'
+    );
+  });
+
+  // Checking TokenStaking total custom staking banalce
+  it('checking total custom staked before any stakes', async () => {
+    result = await tokenStaking.customTotalStaked();
+    assert.equal(
+      result.toString(),
+      tokenCorvert('0'),
+      'total staked should be 0'
+    );
+  });
+
+  // Checking Users Balance before staking
+  it('checking users balance before staking', async () => {
+    result = await testToken.balanceOf(user);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('2235'),
+      'User balance after staking 2235'
+    );
+  });
+
+  // Testing if user able to stake in custom staking
+  it('approving tokens, staking tokens, checking balance', async () => {
+    // first approve tokens to be staked
+    await testToken.approve(tokenStaking.address, tokenCorvert('1234'), {
+      from: user,
+    });
+    // stake tokens
+    await tokenStaking.customStaking(tokenCorvert('1234'), { from: user });
+
+    // check balance of user if they have 1001 after staking
+    result = await testToken.balanceOf(user);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('1001'),
+      'User balance after staking 1001'
+    );
+  });
+
+  // Check custom total staking balance
+  it('checking custom total staked', async () => {
+    result = await tokenStaking.customTotalStaked();
+    assert.equal(
+      result.toString(),
+      tokenCorvert('1234'),
+      'total staked should be 1234'
+    );
+  });
+
+  // Checking customIsStakingAtm function to see if user is staking
+  it('testing if user is staking at custom staking at the moment', async () => {
+    result = await tokenStaking.customIsStakingAtm(user);
+    assert.equal(result.toString(), 'true', 'user is currently staking');
+  });
+
+  // Checking customHasStaked function to see if user ever staked
+  it('testing if user has staked at custom staking', async () => {
+    result = await tokenStaking.customHasStaked(user);
+    assert.equal(result.toString(), 'true', 'user has staked');
+  });
+
+  // Unstaking from custom staking and checking balance
+  it('unstaking from custom staking and checking users balance ', async () => {
+    await tokenStaking.customUnstake({ from: user });
+    result = await testToken.balanceOf(user);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('2235'),
+      'User balance after unstaking 1000 + 1235'
+    );
+  });
+
 })
