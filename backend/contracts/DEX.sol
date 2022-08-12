@@ -81,6 +81,32 @@ contract DEX {
         isStaking[msg.sender] = false;
     }
 
+    /// @dev Function to custom the staked tokens
+    /// @param _amount is the amount that the user want to custom the staking
+    function customStaking(uint256 _amount) public {
+        require(_amount > 0, "You cannot have 0 token to custom Stake");
+        litio.transferFrom(msg.sender, address(this), _amount);
+        customTotalStaked += _amount;
+        customStakingBalance[msg.sender] += _amount;
+
+        if (!customHasStaked[msg.sender]) {
+            customStakers.push(msg.sender);
+        }
+
+        customHasStaked[msg.sender] = true;
+        customIsStaking[msg.sender] = true;
+    }
+
+    /// @dev Function to custom the unstaked amount
+    function customUnstake() public {
+        uint256 balance = customStakingBalance[msg.sender];
+        require(balance > 0, "amount has to be more than 0");
+        testToken.transfer(msg.sender, balance);
+        customTotalStaked = customTotalStaked - balance;
+        customStakingBalance[msg.sender] = 0;
+        customIsStakingAtm[msg.sender] = false;
+    }
+
     /**
      * TODO
      * Default APY
