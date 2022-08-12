@@ -37,5 +37,73 @@ describe("DEX", function () {
     assert.equal(balance.toString(), tokenCorvert('500000'));
   });
 
-  
+  // Checking TokenStaking total banalce
+  it('checking total staked before any stakes', async () => {
+    result = await tokenStaking.totalStaked();
+    assert.equal(
+      result.toString(),
+      tokenCorvert('0'),
+      'total staked should be 0'
+    );
+  });
+
+  // Testing stakeTokens function
+  it('approving tokens, staking tokens, checking balance', async () => {
+    // First approve tokens to be staked
+    await testToken.approve(tokenStaking.address, tokenCorvert('1000'), {
+      from: user,
+    });
+    // stake tokens
+    await tokenStaking.stakeTokens(tokenCorvert('1000'), { from: user });
+
+    // Check balance of user if they have 0 after staking
+    result = await testToken.balanceOf(user);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('1234'),
+      'User balance after staking 1234'
+    );
+  });
+
+  // Checking balance of TokenStaking contract should be 500k +1000
+  it('checking contract balance after staking', async () => {
+    result = await testToken.balanceOf(tokenStaking.address);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('501000'),
+      'Smart contract total balance after staking 1000'
+    );
+  });
+
+  // Checking TokenStaking contract users balance
+  it('checking user balance inside contract', async () => {
+    result = await tokenStaking.stakingBalance(user);
+    assert.equal(
+      result.toString(),
+      tokenCorvert('1000'),
+      'Smart contract balance for user'
+    );
+  });
+
+  // Checking TokenStaking totalstaked balance
+  it('checking total staked', async () => {
+    result = await tokenStaking.totalStaked();
+    assert.equal(
+      result.toString(),
+      tokenCorvert('1000'),
+      'total staked should be 1000'
+    );
+  });
+
+  // Checking isStaking function to see if user is staking
+  it('testing if user is staking at the moment', async () => {
+    result = await tokenStaking.isStakingAtm(user);
+    assert.equal(result.toString(), 'true', 'user is currently staking');
+  });
+
+  // Checking hasStaked function to see if user ever staked
+  it('testing if user has staked', async () => {
+    result = await tokenStaking.hasStaked(user);
+    assert.equal(result.toString(), 'true', 'user has staked');
+  });
 })
